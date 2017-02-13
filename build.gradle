@@ -1,7 +1,8 @@
-group 'com.steveperkins'
+group 'com.steveperkins.group'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 
@@ -11,7 +12,20 @@ repositories {
 
 dependencies {
     compile 'com.ecwid.consul:consul-api:1.2.1'
+    compile 'com.bettercloud:vault-java-driver:2.0.0'
     testCompile 'junit:junit:4.11'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.steveperkins.config'
+            artifactId 'config-client-lib'
+            version '1.0-SNAPSHOT'
+
+            from components.java
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {
