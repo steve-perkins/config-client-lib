@@ -26,7 +26,7 @@ wiser.
 
 Setup
 =====
-1. Perform all of the steps outlines in the [config-properties](https://github.com/steve-perkins/config-properties) 
+1. Perform all of the steps outlined in the [config-properties](https://github.com/steve-perkins/config-properties) 
    project's README file.
 2. Build this client lib, so that it will available in your local Maven dependency cache:
 
