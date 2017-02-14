@@ -1,5 +1,5 @@
 config-client-lib
-================
+=================
 This is one of three Git repositories, which work together to demonstrate using [Consul](https://www.consul.io) and 
 [Vault](https://www.vaultproject.io) for configuration management:
 

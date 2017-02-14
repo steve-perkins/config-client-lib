@@ -1,4 +1,4 @@
-group 'com.steveperkins.group'
+group 'com.steveperkins.config'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
