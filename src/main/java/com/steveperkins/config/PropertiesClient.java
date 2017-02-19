@@ -8,22 +8,35 @@ import com.bettercloud.vault.response.LogicalResponse;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.kv.model.GetValue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
-/**
- * TODO: Document
- */
 public class PropertiesClient {
 
     /**
-     * TODO: Document
+     * <p>Called by the application, at startup or when updating config properties with their current values
+     * during runtime.  Loads all non-secret properties from Consul.  When the value found in Consul
+     * contains a Vault path (i.e. it's a secret property), then the true value is loaded from Vault.</p>
+     *
+     * <p>This method expects to find several JVM system properties... telling it which Consul and Vault
+     * instances to access and for which environment and application.  If these properties are not found,
+     * then the application is presumable running in local mode (i.e. on a developer's workstation), and
+     * so the library loads properties from a <code>local.properties</code> file in the classpath instead.</p>
+     *
+     * @return A Map of property key-value pairs
      */
     public static Map<String, String> loadProperties() {
 
         // Validate system properties
         final String environment = Optional.ofNullable(System.getProperty("ENVIRONMENT")).orElse("local");
+        if (environment.equals("local")) {
+            return fromLocal();
+        }
         final String application = Optional.ofNullable(System.getProperty("APPLICATION"))
                 .orElseThrow(() -> new RuntimeException("The system property \"APPLICATION\" is not set"));
         final String consulHost = Optional.ofNullable(System.getProperty("CONSUL_HOST"))
@@ -34,11 +47,6 @@ public class PropertiesClient {
                 .orElseThrow(() -> new RuntimeException("The system property \"VAULT_USERNAME\" is not set"));
         final String vaultPassword = Optional.ofNullable(System.getProperty("VAULT_PASSWORD"))
                 .orElseThrow(() -> new RuntimeException("The system property \"VAULT_PASSWORD\" is not set"));
-
-        // TODO
-        if (environment.equals("local")) {
-            return fromLocal();
-        }
 
         try {
             // Connect with Consul and Vault
@@ -69,13 +77,19 @@ public class PropertiesClient {
         }
     }
 
-    /**
-     * TODO: Implement, and the document
-     *
-     * @return
-     */
     private static Map<String, String> fromLocal() {
-        return null;
+        final Properties properties = new Properties();
+        try (final InputStream input = PropertiesClient.class.getResourceAsStream("/local.properties")) {
+            properties.load(input);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final Map<String, String> returnValue = new HashMap<>();
+        for (final Enumeration props = properties.propertyNames(); props.hasMoreElements(); ) {
+            final String key = props.nextElement().toString();
+            returnValue.put(key, properties.getProperty(key));
+        }
+        return returnValue;
     }
 
     private static Vault vaultConnection(final String vaultUrl, final String vaultUsername, final String vaultPassword)
